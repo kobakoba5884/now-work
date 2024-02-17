@@ -3,12 +3,16 @@
  */
 package now.work;
 
-public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+import now.work.dtos.RecieveDetail;
+import now.work.services.ListService;
+
+public class App {
+    public static void main(String[] args) throws IOException {
+        Path inputFilePath = Paths.get("data/input.csv");
+        ListService.generateCsvWithHeader(inputFilePath, RecieveDetail.class);
     }
 }

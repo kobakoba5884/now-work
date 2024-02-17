@@ -37,7 +37,7 @@ public class ListService {
 
         // outer for statement
         recieveDetailList.forEach(recieveDetail -> {
-            // filter and get recievePlan 
+            // filter and get recievePlan
             Optional<RecievePlan> foundRecievePlan = recievePlanList.stream()
                     .filter(generatePredicate(recieveDetail))
                     .findFirst();
@@ -51,18 +51,33 @@ public class ListService {
                 String newItemCd = recieveDetail.getItemCd();
                 String newDesignCd = recieveDetail.getDesignCd();
                 String newDateOfManufacture = recieveDetail.getDateOfManufacture();
+                int stockNum = recieveDetail.getStockNum();
                 String newOther = recieveDetail.getOther();
 
                 RecievePlan newRecievePlan = new RecievePlan.Builder()
                         .setPrintKey(printKey)
-                        .setPlanListNo(planListNo.getAndIncrement())
                         .setItemCd(newItemCd)
                         .setDesignCd(newDesignCd)
                         .setDateOfManufacture(newDateOfManufacture)
                         .setOther(newOther)
                         .build();
 
-                recievePlanList.add(newRecievePlan);
+                if (stockNum != 0) {
+                    IntStream.rangeClosed(1, stockNum).forEach(i -> {
+                        RecievePlan copyRecievePlan = newRecievePlan.clone();
+                        String stockDataFormat = "stockData%d";
+
+                        copyRecievePlan.setPlanListNo(planListNo.getAndIncrement());
+                        copyRecievePlan.setStockData(String.format(stockDataFormat, i));
+
+                        recievePlanList.add(copyRecievePlan);
+                    });
+                } else {
+                    newRecievePlan.setPlanListNo(planListNo.getAndIncrement());
+
+                    recievePlanList.add(newRecievePlan);
+                }
+
             }
         });
 
@@ -71,9 +86,10 @@ public class ListService {
 
     private static Predicate<RecievePlan> generatePredicate(RecieveDetail recieveDetail) {
         Predicate<RecievePlan> matchesItemCd = recievePlan -> recievePlan.getItemCd().equals(recieveDetail.getItemCd());
-        Predicate<RecievePlan> matchesItemCd2 = recievePlan -> recievePlan.getDesignCd().equals(recieveDetail.getDesignCd());
+        // Predicate<RecievePlan> matchesItemCd2 = recievePlan ->
+        // recievePlan.getDesignCd().equals(recieveDetail.getDesignCd());
 
-        return matchesItemCd.and(matchesItemCd2);
+        return matchesItemCd;
     }
 
     private static void writeRecieveDetailsToCsv(List<RecievePlan> recievePlanList, Path outputPath)
@@ -116,8 +132,7 @@ public class ListService {
         return recieveDetail;
     }
 
-    @SuppressWarnings("unused")
-    private static void generateCsvWithHeader(Path filePath, Class<?> clazz) throws IOException {
+    public static void generateCsvWithHeader(Path filePath, Class<?> clazz) throws IOException {
         if (Files.exists(filePath)) {
             Files.delete(filePath);
         }

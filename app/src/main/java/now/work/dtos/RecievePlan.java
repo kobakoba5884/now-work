@@ -6,12 +6,13 @@ import java.util.function.Function;
 
 import now.work.annotations.CsvHeader;
 
-public class RecievePlan {
+public class RecievePlan implements Cloneable {
     public static final String headerPrintKey = "Print Key";
     public static final String headerPlanListNo = "Plan List No";
     public static final String headerItemCd = "Item CD";
     public static final String headerDesignCd = "Design CD";
     public static final String headerDateOfManufacture = "Date of Manufacture";
+    public static final String headerStockData = "Stock Data";
     public static final String headerOther = "Other";
 
     @CsvHeader(headerName = headerPrintKey)
@@ -28,6 +29,9 @@ public class RecievePlan {
 
     @CsvHeader(headerName = headerDateOfManufacture)
     private String dateOfManufacture;
+    
+    @CsvHeader(headerName = headerStockData)
+    private String stockData;
 
     @CsvHeader(headerName = headerOther)
     private String other;
@@ -40,6 +44,7 @@ public class RecievePlan {
         getterMap.put(headerItemCd, RecievePlan::getItemCd);
         getterMap.put(headerDesignCd, RecievePlan::getDesignCd);
         getterMap.put(headerDateOfManufacture, RecievePlan::getDateOfManufacture);
+        getterMap.put(headerStockData, RecievePlan::getStockData);
         getterMap.put(headerOther, RecievePlan::getOther);
     }
 
@@ -49,17 +54,17 @@ public class RecievePlan {
         this.itemCd = builder.itemCd;
         this.designCd = builder.designCd;
         this.dateOfManufacture = builder.dateOfManufacture;
+        this.stockData = builder.stockData;
         this.other = builder.other;
     }
 
-    public RecievePlan(int printKey, int planListNo, String itemCd, String designCd, String dateOfManufacture,
-            String other) {
-        this.printKey = printKey;
-        this.planListNo = planListNo;
-        this.itemCd = itemCd;
-        this.designCd = designCd;
-        this.dateOfManufacture = dateOfManufacture;
-        this.other = other;
+    @Override
+    public RecievePlan clone() {
+        try {
+            return (RecievePlan) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     public int getPrintKey() {
@@ -102,6 +107,14 @@ public class RecievePlan {
         this.dateOfManufacture = dateOfManufacture;
     }
 
+    public String getStockData() {
+        return stockData;
+    }
+
+    public void setStockData(String stockData) {
+        this.stockData = stockData;
+    }
+
     public String getOther() {
         return other;
     }
@@ -110,10 +123,12 @@ public class RecievePlan {
         this.other = other;
     }
 
+
     @Override
     public String toString() {
         return "RecievePlan [printKey=" + printKey + ", planListNo=" + planListNo + ", itemCd=" + itemCd + ", designCd="
-                + designCd + ", dateOfManufacture=" + dateOfManufacture + ", other=" + other + "]";
+                + designCd + ", dateOfManufacture=" + dateOfManufacture + ", stockData=" + stockData + ", other="
+                + other + "]";
     }
 
     public static class Builder {
@@ -122,6 +137,7 @@ public class RecievePlan {
         private String itemCd;
         private String designCd;
         private String dateOfManufacture;
+        private String stockData;
         private String other;
 
         public Builder setPrintKey(int printKey) {
@@ -146,6 +162,11 @@ public class RecievePlan {
 
         public Builder setDateOfManufacture(String dateOfManufacture) {
             this.dateOfManufacture = dateOfManufacture;
+            return this;
+        }
+
+        public Builder setStockData(String stockData) {
+            this.stockData = stockData;
             return this;
         }
 
