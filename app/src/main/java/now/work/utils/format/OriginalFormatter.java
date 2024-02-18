@@ -5,14 +5,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 public class OriginalFormatter {
+    public static final String preDateFormat = "yyyyMMdd";
+    public static final String dateFormat = "yyyy/MM/dd";
+    public static final int dateLength = dateFormat.length();
+    public static final int designCdLength = 2;
+
     public static String formalizeDateOfManufacture(String dateOfManufacture) {
-        return formalizeDate(dateOfManufacture)
-                .orElse(" ".repeat(10));
+        return formalizeDate(dateOfManufacture).orElse(" ".repeat(dateLength));
 
     }
 
     public static String formalizeDesignCd(String designCd) {
-        return designCd.isEmpty() ? " ".repeat(2) : designCd;
+        return designCd.isEmpty() ? " ".repeat(designCdLength) : designCd;
     }
 
     public static String formalizeStockData(int index) {
@@ -25,9 +29,9 @@ public class OriginalFormatter {
             return Optional.empty();
         }
 
-        DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern("yyyyMMdd");
+        DateTimeFormatter originalFormat = DateTimeFormatter.ofPattern(preDateFormat);
 
-        DateTimeFormatter newFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter newFormat = DateTimeFormatter.ofPattern(dateFormat);
 
         LocalDate date = LocalDate.parse(dateOfManufacture, originalFormat);
 

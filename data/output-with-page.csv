@@ -1,10 +1,10 @@
 Print Key,Plan List No,Item CD,Design CD,Date of Manufacture,Stock Data,Page No,Sort Key,Header Or Detail,Other
-1691304139,1,M001,010202,2000/01/022001/01/052004/10/24,stockData1,1,1,header/detail,other1
-1691304139,2,M002,  ,1998/02/13,stockData1,2,3,header/detail,other2
-1691304139,3,M002,  ,1998/02/13,stockData2,2,3,detail,other2
-1691304139,4,M003,0101,2002/03/152003/05/17,null,2,4,header,other4
-1691304139,9,M004,0001,1999/12/312001/06/18,stockData1,3,6,header/detail,other7
-1691304139,5,M005,0001,2002/07/20          ,stockData1,4,8,header/detail,other6
-1691304139,6,M005,0001,2002/07/20          ,stockData2,4,8,detail,other6
-1691304139,7,M005,0001,2002/07/20          ,stockData3,4,8,detail,other6
-1691304139,8,M005,0001,2002/07/20          ,stockData4,5,9,detail,other6
+761445905,1,M001,010203,2000/01/022001/01/052004/10/24,stockData1,1,1,header/detail,other1
+761445905,2,M002,  ,1998/02/13,stockData1,2,3,header/detail,other2
+761445905,3,M002,  ,1998/02/13,stockData2,2,3,detail,other2
+761445905,4,M003,0101,2002/03/152003/05/17,null,3,5,header,other4
+761445905,9,M004,0001,1999/12/312001/06/18,stockData1,4,7,header/detail,other7
+761445905,5,M005,0001,2002/07/20          ,stockData1,5,9,header/detail,other6
+761445905,6,M005,0001,2002/07/20          ,stockData2,6,10,detail,other6
+761445905,7,M005,0001,2002/07/20          ,stockData3,7,11,detail,other6
+761445905,8,M005,0001,2002/07/20          ,stockData4,8,12,detail,other6

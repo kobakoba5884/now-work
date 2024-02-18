@@ -16,6 +16,9 @@ import now.work.dtos.RecieveDetail;
 import now.work.dtos.RecievePlan;
 
 public class OriginalCsv {
+    private static final String separatorByOS = System.getProperty("line.separator");
+    private static final String csvDelimiter = ",";
+
     public static void createCsvWithHeader(Path filePath, Class<?> clazz) throws IOException {
         if (Files.exists(filePath)) {
             Files.delete(filePath);
@@ -24,50 +27,53 @@ public class OriginalCsv {
         String header = Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(CsvHeader.class))
                 .map(field -> field.getAnnotation(CsvHeader.class).headerName())
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(csvDelimiter));
 
-        Files.write(filePath, (header + "\n").getBytes(), StandardOpenOption.CREATE);
+        Files.write(filePath, (header.concat(separatorByOS)).getBytes(), StandardOpenOption.CREATE);
 
         System.out.println("successfully created csv file");
     }
 
-    public static List<RecieveDetail> convertCsvToRecieveDetailList(Path filePath) throws IOException {
-        List<String> headerline = Arrays.asList(Files.lines(filePath).findFirst().orElse("").split(","));
+    public static List<RecieveDetail> convertCsvToRecieveDetailList(Path filePath)
+            throws IOException {
+        List<String> headerline = Arrays.asList(Files.lines(filePath).findFirst().orElse("").split(csvDelimiter));
 
         try (Stream<String> lines = Files.lines(filePath)) {
             return Files.lines(filePath)
                     .skip(1)
-                    .map(line -> line.split(","))
+                    .map(line -> line.split(csvDelimiter))
                     .map(values -> createRecieveDetailFromValues(headerline, values))
                     .collect(Collectors.toList());
         }
     }
 
-    private static RecieveDetail createRecieveDetailFromValues(List<String> headerline, String[] values) {
-        RecieveDetail recieveDetail = new RecieveDetail();
+    private static RecieveDetail createRecieveDetailFromValues(List<String> headerline,
+            String[] values) {
+        RecieveDetail instance = new RecieveDetail();
 
         for (int i = 0; i < headerline.size(); i++) {
-            String key = headerline.get(i);
+            String headerName = headerline.get(i);
             String value = i < values.length ? values[i] : "";
-            BiConsumer<RecieveDetail, String> setter = RecieveDetail.setterMap.get(key);
+            BiConsumer<RecieveDetail, String> setter = RecieveDetail.setterMap.get(headerName);
 
             if (!Objects.isNull(setter)) {
-                setter.accept(recieveDetail, value);
+                setter.accept(instance, value);
             }
         }
-        return recieveDetail;
+        return instance;
     }
 
     public static void writeRecieveDetailsToCsv(List<RecievePlan> recievePlanList, Path outputPath)
             throws IOException {
-        String headerline = String.join(",", RecievePlan.getterMap.keySet());
+        String headerline = String.join(csvDelimiter, RecievePlan.getterMap.keySet());
 
         List<String> dataLines = recievePlanList.stream()
                 .map(recievePlan -> RecievePlan.getterMap.entrySet().stream()
                         .map(entry -> entry.getValue().apply(recievePlan))
-                        .collect(Collectors.joining(",")))
+                        .collect(Collectors.joining(csvDelimiter)))
                 .collect(Collectors.toList());
 
-        Files.write(outputPath, (headerline + "\n" + String.join("\n", dataLines)).getBytes());
+        Files.write(outputPath,
+                (headerline.concat(separatorByOS).concat(String.join(separatorByOS, dataLines))).getBytes());
     }
 }

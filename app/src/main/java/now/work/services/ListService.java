@@ -17,8 +17,9 @@ import java.util.stream.IntStream;
 import now.work.dtos.RecieveDetail;
 import now.work.dtos.RecievePlan;
 import now.work.enums.HeaderOrDetail;
-import now.work.utils.format.OriginalFormatter;
-import now.work.utils.io.OriginalCsv;
+import static now.work.utils.format.OriginalFormatter.*;
+import static now.work.utils.format.OriginalFormatter.dateLength;
+import static now.work.utils.io.OriginalCsv.*;
 
 public class ListService {
     public static void main(String[] args) throws IOException {
@@ -26,7 +27,7 @@ public class ListService {
         Path outputFilePath = Paths.get("data/output.csv");
         Path sourtedOutputFilePath = Paths.get("data/sorted-output.csv");
         Path OutputWithPageFilePath = Paths.get("data/output-with-page.csv");
-        List<RecieveDetail> recieveDetailList = OriginalCsv.convertCsvToRecieveDetailList(inputFilePath);
+        List<RecieveDetail> recieveDetailList = convertCsvToRecieveDetailList(inputFilePath);
         // get printKey
         int printKey = Math.abs(new Random().nextInt());
 
@@ -47,9 +48,9 @@ public class ListService {
             if (!matchingRecievePlanList.isEmpty()) {
                 matchingRecievePlanList.stream().forEach(matchingRecievePlan -> {
                     // formalizing
-                    String formalizedDateOfManufacture = OriginalFormatter.formalizeDateOfManufacture(
+                    String formalizedDateOfManufacture = formalizeDateOfManufacture(
                             recieveDetail.getDateOfManufacture());
-                    String formalizedDesignCd = OriginalFormatter.formalizeDesignCd(recieveDetail.getDesignCd());
+                    String formalizedDesignCd = formalizeDesignCd(recieveDetail.getDesignCd());
 
                     // concating
                     String editedDateOfManufacture = matchingRecievePlan.getDateOfManufacture()
@@ -68,9 +69,8 @@ public class ListService {
                 // foundRecievePlan.get().setDateOfManufacture(editedDateOfManufacture);
             } else { // adding
                 String newItemCd = recieveDetail.getItemCd();
-                String newDesignCd = OriginalFormatter.formalizeDesignCd(recieveDetail.getDesignCd());
-                String newDateOfManufacture = OriginalFormatter
-                        .formalizeDateOfManufacture(recieveDetail.getDateOfManufacture());
+                String newDesignCd = formalizeDesignCd(recieveDetail.getDesignCd());
+                String newDateOfManufacture = formalizeDateOfManufacture(recieveDetail.getDateOfManufacture());
                 int stockNum = recieveDetail.getStockNum();
                 String newOther = recieveDetail.getOther();
 
@@ -84,10 +84,13 @@ public class ListService {
                         .build();
 
                 if (stockNum != 0) { // add stock data
-                    IntStream.rangeClosed(1, stockNum).forEach(i -> {
+                    int firstLine = 1;
+
+                    IntStream.rangeClosed(firstLine, stockNum).forEach(i -> {
                         RecievePlan clonedRecievePlan = newRecievePlan.clone();
-                        String formalizedStockData = OriginalFormatter.formalizeStockData(i);
-                        HeaderOrDetail headerOrDetail = i == 1 ? HeaderOrDetail.HeaderAndDetail : HeaderOrDetail.Detail;
+                        String formalizedStockData = formalizeStockData(i);
+                        HeaderOrDetail headerOrDetail = i == firstLine ? HeaderOrDetail.HeaderAndDetail
+                                : HeaderOrDetail.Detail;
 
                         clonedRecievePlan.setPlanListNo(planListNo.getAndIncrement());
                         clonedRecievePlan.setStockData(formalizedStockData);
@@ -103,18 +106,19 @@ public class ListService {
             }
         });
 
-        OriginalCsv.writeRecieveDetailsToCsv(recievePlanList, outputFilePath);
+        writeRecieveDetailsToCsv(recievePlanList, outputFilePath);
 
         // sorting
         List<RecievePlan> sortedRecievePlanList = sortRecievePlans(recievePlanList);
-        OriginalCsv.writeRecieveDetailsToCsv(sortedRecievePlanList, sourtedOutputFilePath);
+        writeRecieveDetailsToCsv(sortedRecievePlanList, sourtedOutputFilePath);
 
         // paging
         pagingHandle(sortedRecievePlanList);
-        OriginalCsv.writeRecieveDetailsToCsv(sortedRecievePlanList, OutputWithPageFilePath);
+        writeRecieveDetailsToCsv(sortedRecievePlanList, OutputWithPageFilePath);
     }
 
     private static void pagingHandle(List<RecievePlan> recievePlanList) {
+        int upperLine = 3;
         int headerCount = 0;
         int detailCount = 0;
         int printPageNo = 1;
@@ -125,7 +129,7 @@ public class ListService {
             RecievePlan next = recievePlanList.get(i + 1);
 
             if (headerCount == 0) {
-                headerCount = current.getDateOfManufacture().length() / 10;
+                headerCount = current.getDateOfManufacture().length() / dateLength;
 
                 // current detail
                 if (!Objects.isNull(current.getStockData())) {
@@ -138,7 +142,7 @@ public class ListService {
 
             // next header
             if (!current.getItemCd().equals(next.getItemCd())) {
-                headerCount = headerCount + (next.getDateOfManufacture().length() / 10);
+                headerCount = headerCount + (next.getDateOfManufacture().length() / dateLength);
                 ++sortKey;
             }
 
@@ -147,7 +151,7 @@ public class ListService {
                 ++detailCount;
             }
 
-            if (headerCount + detailCount > 5) {
+            if (headerCount + detailCount > upperLine) {
                 headerCount = 0;
                 detailCount = 0;
                 ++printPageNo;

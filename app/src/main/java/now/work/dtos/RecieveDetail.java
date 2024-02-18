@@ -29,7 +29,7 @@ public class RecieveDetail {
 
     @CsvHeader(headerName = headerDateOfManufacture)
     private String dateOfManufacture;
-    
+
     @CsvHeader(headerName = headerStockNum)
     private int stockNum;
 
@@ -62,8 +62,6 @@ public class RecieveDetail {
         this.other = builder.other;
     }
 
-    
-
     public RecieveDetail(int recieveKey, int recieveDetailKey, String itemCd, String designCd, String dateOfManufacture,
             int stockNum, String other) {
         this.recieveKey = recieveKey;
@@ -79,56 +77,54 @@ public class RecieveDetail {
         return recieveKey;
     }
 
-    
     public void setRecieveKey(int recieveKey) {
         this.recieveKey = recieveKey;
     }
-    
+
     public int getRecieveDetailKey() {
         return recieveDetailKey;
     }
-    
+
     public void setRecieveDetailKey(int recieveDetailKey) {
         this.recieveDetailKey = recieveDetailKey;
     }
-    
+
     public String getItemCd() {
         return itemCd;
     }
-    
+
     public void setItemCd(String itemCd) {
         this.itemCd = itemCd;
     }
-    
-    
+
     public String getDesignCd() {
         return designCd;
     }
-    
+
     public void setDesignCd(String designCd) {
         this.designCd = designCd;
     }
-    
+
     public String getDateOfManufacture() {
         return dateOfManufacture;
     }
-    
+
     public void setDateOfManufacture(String dateOfManufacture) {
         this.dateOfManufacture = dateOfManufacture;
     }
-    
+
     public int getStockNum() {
         return stockNum;
     }
-    
+
     public void setStockNum(int stockNum) {
         this.stockNum = stockNum;
     }
-    
+
     public String getOther() {
         return other;
     }
-    
+
     public void setOther(String other) {
         this.other = other;
     }
@@ -168,17 +164,17 @@ public class RecieveDetail {
             this.designCd = designCd;
             return this;
         }
-        
+
         public Builder setDateOfManufacture(String dateOfManufacture) {
             this.dateOfManufacture = dateOfManufacture;
             return this;
         }
-        
+
         public Builder setstockNum(int stockNum) {
             this.stockNum = stockNum;
             return this;
         }
-        
+
         public Builder setOther(String other) {
             this.other = other;
             return this;
@@ -188,5 +184,4 @@ public class RecieveDetail {
             return new RecieveDetail(this);
         }
     }
-
 }
