@@ -1,34 +1,32 @@
 package now.work.services;
 
-// import java.io.File;
-// import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
+// import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import now.work.annotations.CsvHeader;
 import now.work.dtos.RecieveDetail;
 import now.work.dtos.RecievePlan;
+import now.work.enums.HeaderOrDetail;
+import now.work.utils.format.OriginalFormatter;
+import now.work.utils.io.OriginalCsv;
 
 public class ListService {
     public static void main(String[] args) throws IOException {
         Path inputFilePath = Paths.get("data/input.csv");
         Path outputFilePath = Paths.get("data/output.csv");
-        List<RecieveDetail> recieveDetailList = convertCsvToRecieveDetailList(inputFilePath);
+        Path sourtedOutputFilePath = Paths.get("data/sorted-output.csv");
+        Path OutputWithPageFilePath = Paths.get("data/output-with-page.csv");
+        List<RecieveDetail> recieveDetailList = OriginalCsv.convertCsvToRecieveDetailList(inputFilePath);
         // get printKey
         int printKey = Math.abs(new Random().nextInt());
 
@@ -38,19 +36,41 @@ public class ListService {
         // outer for statement
         recieveDetailList.forEach(recieveDetail -> {
             // filter and get recievePlan
-            Optional<RecievePlan> foundRecievePlan = recievePlanList.stream()
+            // Optional<RecievePlan> foundRecievePlan = recievePlanList.stream()
+            // .filter(generatePredicate(recieveDetail))
+            // .findFirst();
+
+            List<RecievePlan> matchingRecievePlanList = recievePlanList.stream()
                     .filter(generatePredicate(recieveDetail))
-                    .findFirst();
+                    .collect(Collectors.toList());
 
-            if (foundRecievePlan.isPresent()) { // editing
-                String updatedDateOfManufacture = foundRecievePlan.get().getDateOfManufacture()
-                        .concat(recieveDetail.getDateOfManufacture());
+            if (!matchingRecievePlanList.isEmpty()) {
+                matchingRecievePlanList.stream().forEach(matchingRecievePlan -> {
+                    // formalizing
+                    String formalizedDateOfManufacture = OriginalFormatter.formalizeDateOfManufacture(
+                            recieveDetail.getDateOfManufacture());
+                    String formalizedDesignCd = OriginalFormatter.formalizeDesignCd(recieveDetail.getDesignCd());
 
-                foundRecievePlan.get().setDateOfManufacture(updatedDateOfManufacture);
+                    // concating
+                    String editedDateOfManufacture = matchingRecievePlan.getDateOfManufacture()
+                            .concat(formalizedDateOfManufacture);
+                    String editedDesignCd = matchingRecievePlan.getDesignCd()
+                            .concat(formalizedDesignCd);
+
+                    matchingRecievePlan.setDateOfManufacture(editedDateOfManufacture);
+                    matchingRecievePlan.setDesignCd(editedDesignCd);
+                });
+                // if (foundRecievePlan.isPresent()) { // editing
+                // String editedDateOfManufacture =
+                // foundRecievePlan.get().getDateOfManufacture()
+                // .concat(formalizeDate(recieveDetail.getDateOfManufacture()));
+
+                // foundRecievePlan.get().setDateOfManufacture(editedDateOfManufacture);
             } else { // adding
                 String newItemCd = recieveDetail.getItemCd();
-                String newDesignCd = recieveDetail.getDesignCd();
-                String newDateOfManufacture = recieveDetail.getDateOfManufacture();
+                String newDesignCd = OriginalFormatter.formalizeDesignCd(recieveDetail.getDesignCd());
+                String newDateOfManufacture = OriginalFormatter
+                        .formalizeDateOfManufacture(recieveDetail.getDateOfManufacture());
                 int stockNum = recieveDetail.getStockNum();
                 String newOther = recieveDetail.getOther();
 
@@ -59,29 +79,95 @@ public class ListService {
                         .setItemCd(newItemCd)
                         .setDesignCd(newDesignCd)
                         .setDateOfManufacture(newDateOfManufacture)
+                        .setHeaderOrDetail(HeaderOrDetail.Header)
                         .setOther(newOther)
                         .build();
 
-                if (stockNum != 0) {
+                if (stockNum != 0) { // add stock data
                     IntStream.rangeClosed(1, stockNum).forEach(i -> {
-                        RecievePlan copyRecievePlan = newRecievePlan.clone();
-                        String stockDataFormat = "stockData%d";
+                        RecievePlan clonedRecievePlan = newRecievePlan.clone();
+                        String formalizedStockData = OriginalFormatter.formalizeStockData(i);
+                        HeaderOrDetail headerOrDetail = i == 1 ? HeaderOrDetail.HeaderAndDetail : HeaderOrDetail.Detail;
 
-                        copyRecievePlan.setPlanListNo(planListNo.getAndIncrement());
-                        copyRecievePlan.setStockData(String.format(stockDataFormat, i));
+                        clonedRecievePlan.setPlanListNo(planListNo.getAndIncrement());
+                        clonedRecievePlan.setStockData(formalizedStockData);
+                        clonedRecievePlan.setHeaderOrDetail(headerOrDetail);
 
-                        recievePlanList.add(copyRecievePlan);
+                        recievePlanList.add(clonedRecievePlan);
                     });
-                } else {
+                } else { // add no stock data
                     newRecievePlan.setPlanListNo(planListNo.getAndIncrement());
 
                     recievePlanList.add(newRecievePlan);
                 }
-
             }
         });
 
-        writeRecieveDetailsToCsv(recievePlanList, outputFilePath);
+        OriginalCsv.writeRecieveDetailsToCsv(recievePlanList, outputFilePath);
+
+        // sorting
+        List<RecievePlan> sortedRecievePlanList = sortRecievePlans(recievePlanList);
+        OriginalCsv.writeRecieveDetailsToCsv(sortedRecievePlanList, sourtedOutputFilePath);
+
+        // paging
+        pagingHandle(sortedRecievePlanList);
+        OriginalCsv.writeRecieveDetailsToCsv(sortedRecievePlanList, OutputWithPageFilePath);
+    }
+
+    private static void pagingHandle(List<RecievePlan> recievePlanList) {
+        int headerCount = 0;
+        int detailCount = 0;
+        int printPageNo = 1;
+        int sortKey = 1;
+
+        for (int i = 0; i < recievePlanList.size() - 1; i++) {
+            RecievePlan current = recievePlanList.get(i);
+            RecievePlan next = recievePlanList.get(i + 1);
+
+            if (headerCount == 0) {
+                headerCount = current.getDateOfManufacture().length() / 10;
+
+                // current detail
+                if (!Objects.isNull(current.getStockData())) {
+                    detailCount = 1;
+                }
+
+                current.setPageNo(printPageNo);
+                current.setSortKey(sortKey);
+            }
+
+            // next header
+            if (!current.getItemCd().equals(next.getItemCd())) {
+                headerCount = headerCount + (next.getDateOfManufacture().length() / 10);
+                ++sortKey;
+            }
+
+            // next detail
+            if (!Objects.isNull(next.getStockData())) {
+                ++detailCount;
+            }
+
+            if (headerCount + detailCount > 5) {
+                headerCount = 0;
+                detailCount = 0;
+                ++printPageNo;
+                ++sortKey;
+            }
+
+            next.setPageNo(printPageNo);
+            next.setSortKey(sortKey);
+        }
+    }
+
+    private static List<RecievePlan> sortRecievePlans(List<RecievePlan> recievePlanList) {
+        Comparator<RecievePlan> comparator = Comparator
+                .comparing(RecievePlan::getItemCd)
+                .thenComparing(RecievePlan::getDateOfManufacture)
+                .thenComparing(RecievePlan::getDesignCd);
+
+        return recievePlanList.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
 
     private static Predicate<RecievePlan> generatePredicate(RecieveDetail recieveDetail) {
@@ -91,97 +177,4 @@ public class ListService {
 
         return matchesItemCd;
     }
-
-    private static void writeRecieveDetailsToCsv(List<RecievePlan> recievePlanList, Path outputPath)
-            throws IOException {
-        String headerline = String.join(",", RecievePlan.getterMap.keySet());
-
-        List<String> dataLines = recievePlanList.stream()
-                .map(recievePlan -> RecievePlan.getterMap.entrySet().stream()
-                        .map(entry -> entry.getValue().apply(recievePlan))
-                        .collect(Collectors.joining(",")))
-                .collect(Collectors.toList());
-
-        Files.write(outputPath, (headerline + "\n" + String.join("\n", dataLines)).getBytes());
-    }
-
-    private static List<RecieveDetail> convertCsvToRecieveDetailList(Path filePath) throws IOException {
-        List<String> headerline = Arrays.asList(Files.lines(filePath).findFirst().orElse("").split(","));
-
-        try (Stream<String> lines = Files.lines(filePath)) {
-            return Files.lines(filePath)
-                    .skip(1)
-                    .map(line -> line.split(","))
-                    .map(values -> createRecieveDetailFromValues(headerline, values))
-                    .collect(Collectors.toList());
-        }
-    }
-
-    private static RecieveDetail createRecieveDetailFromValues(List<String> headerline, String[] values) {
-        RecieveDetail recieveDetail = new RecieveDetail();
-
-        for (int i = 0; i < headerline.size(); i++) {
-            String key = headerline.get(i);
-            String value = i < values.length ? values[i] : "";
-            BiConsumer<RecieveDetail, String> setter = RecieveDetail.setterMap.get(key);
-
-            if (!Objects.isNull(setter)) {
-                setter.accept(recieveDetail, value);
-            }
-        }
-        return recieveDetail;
-    }
-
-    public static void generateCsvWithHeader(Path filePath, Class<?> clazz) throws IOException {
-        if (Files.exists(filePath)) {
-            Files.delete(filePath);
-        }
-
-        String header = Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(CsvHeader.class))
-                .map(field -> field.getAnnotation(CsvHeader.class).headerName())
-                .collect(Collectors.joining(","));
-
-        Files.write(filePath, (header + "\n").getBytes(), StandardOpenOption.CREATE);
-
-        System.out.println("successfully created csv file");
-    }
-
-    @SuppressWarnings("unused")
-    private static List<RecieveDetail> generateRecieveDetailList(int size) {
-        final int startInclusive = 1;
-        final int recieveKey = 1;
-        final String itemCdFormat = "itemCd%d";
-        final String designCdFormat = "designCd%d";
-        final String dateOfManufactureFormat = "dateOfManufacture%d";
-        final String otherFormat = "other%d";
-
-        List<RecieveDetail> generateList = IntStream.rangeClosed(startInclusive, size)
-                .mapToObj(i -> {
-                    return new RecieveDetail.Builder()
-                            .setRecieveKey(recieveKey)
-                            .setRecieveDetailKey(i)
-                            .setItemCd(String.format(itemCdFormat, i))
-                            .setDesignCd(String.format(designCdFormat, i))
-                            .setDateOfManufacture(String.format(dateOfManufactureFormat, i))
-                            .setOther(String.format(otherFormat, i))
-                            .build();
-                }).collect(Collectors.toList());
-
-        generateList.addAll(IntStream.rangeClosed(startInclusive, size)
-                .mapToObj(i -> {
-                    return new RecieveDetail.Builder()
-                            .setRecieveKey(recieveKey + 1)
-                            .setRecieveDetailKey(i + size)
-                            .setItemCd(String.format(itemCdFormat, i))
-                            .setDesignCd(String.format(designCdFormat, i + size))
-                            .setDateOfManufacture(String.format(dateOfManufactureFormat, i + size))
-                            .setOther(String.format(otherFormat, i + size))
-                            .build();
-                })
-                .collect(Collectors.toList()));
-
-        return generateList;
-    }
-
 }

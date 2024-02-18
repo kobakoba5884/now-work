@@ -3,8 +3,8 @@ Print Key,Plan List No,Item CD,Design CD,Date of Manufacture,Stock Data,Page No,
 1691304139,2,M002,  ,1998/02/13,stockData1,0,0,header/detail,other2
 1691304139,3,M002,  ,1998/02/13,stockData2,0,0,detail,other2
 1691304139,4,M003,0101,2002/03/152003/05/17,null,0,0,header,other4
+1691304139,9,M004,0001,1999/12/312001/06/18,stockData1,0,0,header/detail,other7
 1691304139,5,M005,0001,2002/07/20          ,stockData1,0,0,header/detail,other6
 1691304139,6,M005,0001,2002/07/20          ,stockData2,0,0,detail,other6
 1691304139,7,M005,0001,2002/07/20          ,stockData3,0,0,detail,other6
 1691304139,8,M005,0001,2002/07/20          ,stockData4,0,0,detail,other6
-1691304139,9,M004,0001,1999/12/312001/06/18,stockData1,0,0,header/detail,other7

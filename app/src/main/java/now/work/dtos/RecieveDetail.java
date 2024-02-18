@@ -62,6 +62,19 @@ public class RecieveDetail {
         this.other = builder.other;
     }
 
+    
+
+    public RecieveDetail(int recieveKey, int recieveDetailKey, String itemCd, String designCd, String dateOfManufacture,
+            int stockNum, String other) {
+        this.recieveKey = recieveKey;
+        this.recieveDetailKey = recieveDetailKey;
+        this.itemCd = itemCd;
+        this.designCd = designCd;
+        this.dateOfManufacture = dateOfManufacture;
+        this.stockNum = stockNum;
+        this.other = other;
+    }
+
     public int getRecieveKey() {
         return recieveKey;
     }
@@ -126,7 +139,6 @@ public class RecieveDetail {
                 + itemCd + ", designCd=" + designCd + ", dateOfManufacture=" + dateOfManufacture + ", stockNum="
                 + stockNum + ", other=" + other + "]";
     }
-
 
     public static class Builder {
         private int recieveKey;

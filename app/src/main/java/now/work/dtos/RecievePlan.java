@@ -1,10 +1,11 @@
 package now.work.dtos;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import now.work.annotations.CsvHeader;
+import now.work.enums.HeaderOrDetail;
 
 public class RecievePlan implements Cloneable {
     public static final String headerPrintKey = "Print Key";
@@ -13,6 +14,9 @@ public class RecievePlan implements Cloneable {
     public static final String headerDesignCd = "Design CD";
     public static final String headerDateOfManufacture = "Date of Manufacture";
     public static final String headerStockData = "Stock Data";
+    public static final String headerPageNo = "Page No";
+    public static final String headerSortKey = "Sort Key";
+    public static final String headerHeaderOrDetail = "Header Or Detail";
     public static final String headerOther = "Other";
 
     @CsvHeader(headerName = headerPrintKey)
@@ -29,14 +33,23 @@ public class RecievePlan implements Cloneable {
 
     @CsvHeader(headerName = headerDateOfManufacture)
     private String dateOfManufacture;
-    
+
     @CsvHeader(headerName = headerStockData)
     private String stockData;
+
+    @CsvHeader(headerName = headerPageNo)
+    private int pageNo;
+
+    @CsvHeader(headerName = headerSortKey)
+    private int sortKey;
+
+    @CsvHeader(headerName = headerHeaderOrDetail)
+    private HeaderOrDetail headerOrDetail;
 
     @CsvHeader(headerName = headerOther)
     private String other;
 
-    public static final Map<String, Function<RecievePlan, String>> getterMap = new HashMap<>();
+    public static final Map<String, Function<RecievePlan, String>> getterMap = new LinkedHashMap<>();
 
     static {
         getterMap.put(headerPrintKey, recievePlan -> String.valueOf(recievePlan.getPrintKey()));
@@ -45,6 +58,9 @@ public class RecievePlan implements Cloneable {
         getterMap.put(headerDesignCd, RecievePlan::getDesignCd);
         getterMap.put(headerDateOfManufacture, RecievePlan::getDateOfManufacture);
         getterMap.put(headerStockData, RecievePlan::getStockData);
+        getterMap.put(headerPageNo, recievePlan -> String.valueOf(recievePlan.getPageNo()));
+        getterMap.put(headerSortKey, recievePlan -> String.valueOf(recievePlan.getSortKey()));
+        getterMap.put(headerHeaderOrDetail, recievePlan -> recievePlan.getHeaderOrDetail().getValue());
         getterMap.put(headerOther, RecievePlan::getOther);
     }
 
@@ -55,7 +71,24 @@ public class RecievePlan implements Cloneable {
         this.designCd = builder.designCd;
         this.dateOfManufacture = builder.dateOfManufacture;
         this.stockData = builder.stockData;
+        this.pageNo = builder.pageNo;
+        this.sortKey = builder.sortKey;
+        this.headerOrDetail = builder.headerOrDetail;
         this.other = builder.other;
+    }
+
+    public RecievePlan(int printKey, int planListNo, String itemCd, String designCd, String dateOfManufacture,
+            String stockData, int pageNo, int sortKey, HeaderOrDetail headerOrDetail, String other) {
+        this.printKey = printKey;
+        this.planListNo = planListNo;
+        this.itemCd = itemCd;
+        this.designCd = designCd;
+        this.dateOfManufacture = dateOfManufacture;
+        this.stockData = stockData;
+        this.pageNo = pageNo;
+        this.sortKey = sortKey;
+        this.headerOrDetail = headerOrDetail;
+        this.other = other;
     }
 
     @Override
@@ -115,6 +148,30 @@ public class RecievePlan implements Cloneable {
         this.stockData = stockData;
     }
 
+    public int getPageNo() {
+        return pageNo;
+    }
+
+    public void setPageNo(int pageNo) {
+        this.pageNo = pageNo;
+    }
+
+    public int getSortKey() {
+        return sortKey;
+    }
+
+    public void setSortKey(int sortKey) {
+        this.sortKey = sortKey;
+    }
+
+    public HeaderOrDetail getHeaderOrDetail() {
+        return headerOrDetail;
+    }
+
+    public void setHeaderOrDetail(HeaderOrDetail headerOrDetail) {
+        this.headerOrDetail = headerOrDetail;
+    }
+
     public String getOther() {
         return other;
     }
@@ -123,12 +180,11 @@ public class RecievePlan implements Cloneable {
         this.other = other;
     }
 
-
     @Override
     public String toString() {
         return "RecievePlan [printKey=" + printKey + ", planListNo=" + planListNo + ", itemCd=" + itemCd + ", designCd="
-                + designCd + ", dateOfManufacture=" + dateOfManufacture + ", stockData=" + stockData + ", other="
-                + other + "]";
+                + designCd + ", dateOfManufacture=" + dateOfManufacture + ", stockData=" + stockData + ", pageNo="
+                + pageNo + ", sortKey=" + sortKey + ", headerOrDetail=" + headerOrDetail + ", other=" + other + "]";
     }
 
     public static class Builder {
@@ -138,6 +194,9 @@ public class RecievePlan implements Cloneable {
         private String designCd;
         private String dateOfManufacture;
         private String stockData;
+        private int pageNo;
+        private int sortKey;
+        private HeaderOrDetail headerOrDetail;
         private String other;
 
         public Builder setPrintKey(int printKey) {
@@ -167,6 +226,21 @@ public class RecievePlan implements Cloneable {
 
         public Builder setStockData(String stockData) {
             this.stockData = stockData;
+            return this;
+        }
+
+        public Builder setPageNo(int pageNo) {
+            this.pageNo = pageNo;
+            return this;
+        }
+
+        public Builder setSortKey(int sortKey) {
+            this.sortKey = sortKey;
+            return this;
+        }
+
+        public Builder setHeaderOrDetail(HeaderOrDetail headerOrDetail) {
+            this.headerOrDetail = headerOrDetail;
             return this;
         }
 

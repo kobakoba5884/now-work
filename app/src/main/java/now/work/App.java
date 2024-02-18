@@ -8,11 +8,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import now.work.dtos.RecieveDetail;
-import now.work.services.ListService;
+import now.work.utils.io.OriginalCsv;
 
 public class App {
     public static void main(String[] args) throws IOException {
         Path inputFilePath = Paths.get("data/input.csv");
-        ListService.generateCsvWithHeader(inputFilePath, RecieveDetail.class);
+        OriginalCsv.createCsvWithHeader(inputFilePath, RecieveDetail.class);
     }
 }
